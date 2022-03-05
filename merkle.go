@@ -214,6 +214,44 @@ func (tree *Tree) generateNode(left, right []byte, h hash.Hash) (Node, error) {
 	return NewNode(h, data)
 }
 
+func (tree *Tree) GetProof(leaf []byte) (ret [][]byte, err error) {
+	ret = make([][]byte, 0)
+
+	return tree.getProof(ret, tree.Root(), leaf)
+}
+
+func (tree *Tree) getProof(proof [][]byte, node *Node, leaf []byte) ([][]byte, error) {
+	if bytes.Equal(node.Hash, leaf) {
+		return proof, nil
+	}
+	if node.Right != nil {
+		if node.Left != nil {
+			p := copyProof(proof)
+			p = append(p, node.Left.Hash)
+			return tree.getProof(p, node.Right, leaf)
+		}
+	}
+	if node.Left != nil {
+		if node.Right != nil {
+			p := copyProof(proof)
+			p = append(p, node.Right.Hash)
+			return tree.getProof(p, node.Left, leaf)
+		}
+	}
+
+	return nil, nil
+}
+
+func copyProof(proof [][]byte) (ret [][]byte) {
+	ret = make([][]byte, 0)
+	for _, p := range proof {
+		temp := make([]byte, 0)
+		temp = append(temp, p...)
+		ret = append(ret, temp)
+	}
+	return
+}
+
 // CalculateHeightAndNodeCount returns the height and number of nodes in an unbalanced binary tree given
 // number of leaves
 func CalculateHeightAndNodeCount(leaves uint64) (height, nodeCount uint64) {

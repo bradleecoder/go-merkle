@@ -10,13 +10,107 @@ import (
 	"crypto/md5"
 	"crypto/rand"
 	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"hash"
 	"testing"
 
+	"github.com/ethereum/go-ethereum/crypto"
+
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/crypto/sha3"
 )
+
+func TestSortedMakeMerkle(t *testing.T) {
+	//0x5B38Da6a701c568545dCfcB03FcB875f56beddC4
+	//0x78d6CF3dEF45AF458442e787Fe6e64a03750aB94
+	//0xa7B0E4CF55AF900F6E80D619ae1E00965044bC4E
+	//0x38c4278f42A26a588176017f5e4F6ED831835EA2
+	//0x9f9A0Aa0507fe79cA1fF8f26a8D84bD8bb0Ec9dF
+	//0xDAbf258F5619942D19aD87c3472FABe893B26D7d
+	//0xd30eD9C457C7D32F3F7B949964191e4084c53f66
+
+	allLeaf := make([][]byte, 0)
+	{
+		addr := common.HexToAddress("0x5B38Da6a701c568545dCfcB03FcB875f56beddC4")
+		allLeaf = append(allLeaf, addr.Bytes())
+	}
+	{
+		addr := common.HexToAddress("0x78d6CF3dEF45AF458442e787Fe6e64a03750aB94")
+		allLeaf = append(allLeaf, addr.Bytes())
+	}
+	{
+		addr := common.HexToAddress("0xa7B0E4CF55AF900F6E80D619ae1E00965044bC4E")
+		allLeaf = append(allLeaf, addr.Bytes())
+	}
+	{
+		addr := common.HexToAddress("0x38c4278f42A26a588176017f5e4F6ED831835EA2")
+		allLeaf = append(allLeaf, addr.Bytes())
+	}
+	{
+		addr := common.HexToAddress("0x9f9A0Aa0507fe79cA1fF8f26a8D84bD8bb0Ec9dF")
+		allLeaf = append(allLeaf, addr.Bytes())
+	}
+	{
+		addr := common.HexToAddress("0xDAbf258F5619942D19aD87c3472FABe893B26D7d")
+		allLeaf = append(allLeaf, addr.Bytes())
+	}
+	{
+		addr := common.HexToAddress("0xd30eD9C457C7D32F3F7B949964191e4084c53f66")
+		allLeaf = append(allLeaf, addr.Bytes())
+	}
+	tree := NewTreeWithOpts(TreeOptions{EnableHashSorting: true, DisableHashLeaves: false, DoubleOddNodes: false})
+	err := tree.Generate(allLeaf, sha3.NewLegacyKeccak256())
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+
+	fmt.Printf("Height: %d\n", tree.Height())
+	fmt.Printf("Root: %v\n", hex.EncodeToString(tree.Root().Hash))
+	fmt.Printf("N Leaves: %v\n", len(tree.Leaves()))
+	addr := common.HexToAddress("0xd30eD9C457C7D32F3F7B949964191e4084c53f66")
+	h := crypto.Keccak256(addr.Bytes())
+	fmt.Println("leaf hash", hex.EncodeToString(h))
+	ret, err := tree.GetProof(h)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	for _, r := range ret {
+		fmt.Println("GetProof", hex.EncodeToString(r))
+	}
+
+	{
+		ret := tree.GetNodesAtHeight(1)
+		for _, r := range ret {
+			fmt.Println("GetNodesAtHeight 1", hex.EncodeToString(r.Hash))
+		}
+	}
+	fmt.Println("")
+	{
+		ret := tree.GetNodesAtHeight(2)
+		for _, r := range ret {
+			fmt.Println("GetNodesAtHeight 2", hex.EncodeToString(r.Hash))
+		}
+	}
+	fmt.Println("")
+	{
+		ret := tree.GetNodesAtHeight(3)
+		for _, r := range ret {
+			fmt.Println("GetNodesAtHeight 3", hex.EncodeToString(r.Hash))
+		}
+	}
+	fmt.Println("")
+	{
+		ret := tree.GetNodesAtHeight(4)
+		for _, r := range ret {
+			fmt.Println("GetNodesAtHeight 4", hex.EncodeToString(r.Hash))
+		}
+	}
+}
 
 var simpleHashData []byte
 

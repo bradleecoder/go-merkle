@@ -3,7 +3,7 @@ module github.com/xsleonard/go-merkle
 go 1.12
 
 require (
-	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/stretchr/testify v1.2.2
+	github.com/ethereum/go-ethereum v1.9.20
+	github.com/stretchr/testify v1.7.0
+	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
 )
