@@ -231,8 +231,6 @@ func (m *Tree) GetProof(leaf []byte) ([][]byte, error) {
 		merklePath := make([][]byte, 0)
 		currentHash := current.Hash
 		for currentParent != nil {
-			//fmt.Println("currentParent", hex.EncodeToString(currentParent.Hash[:2]), currentParent.Parent == nil)
-
 			if bytes.Equal(currentParent.Left.Hash, currentHash) {
 				if currentParent.Right != nil {
 					merklePath = append(merklePath, currentParent.Right.Hash)
@@ -247,46 +245,6 @@ func (m *Tree) GetProof(leaf []byte) ([][]byte, error) {
 
 	}
 	return nil, nil
-}
-
-//func (tree *Tree) GetProof(leaf []byte) (ret [][]byte, err error) {
-//	ret = make([][]byte, 0)
-//
-//	return tree.getProof(ret, tree.Root(), leaf)
-//}
-
-//func (tree *Tree) getProof(proof [][]byte, node *Node, leaf []byte) ([][]byte, error) {
-//	if bytes.Equal(node.Hash, leaf) {
-//		return proof, nil
-//	}
-//
-//	if node.Left != nil {
-//		if node.Right != nil {
-//			p := copyProof(proof)
-//			p = append(p, node.Right.Hash)
-//			return tree.getProof(p, node.Left, leaf)
-//		}
-//	}
-//
-//	if node.Right != nil {
-//		if node.Left != nil {
-//			p := copyProof(proof)
-//			p = append(p, node.Left.Hash)
-//			return tree.getProof(p, node.Right, leaf)
-//		}
-//	}
-//
-//	return nil, nil
-//}
-
-func copyProof(proof [][]byte) (ret [][]byte) {
-	ret = make([][]byte, 0)
-	for _, p := range proof {
-		temp := make([]byte, 0)
-		temp = append(temp, p...)
-		ret = append(ret, temp)
-	}
-	return
 }
 
 // CalculateHeightAndNodeCount returns the height and number of nodes in an unbalanced binary tree given
