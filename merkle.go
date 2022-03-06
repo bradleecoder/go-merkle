@@ -8,9 +8,7 @@ package merkle
 
 import (
 	"bytes"
-	"encoding/hex"
 	"errors"
-	"fmt"
 	"hash"
 )
 
@@ -233,10 +231,12 @@ func (m *Tree) GetProof(leaf []byte) ([][]byte, error) {
 		merklePath := make([][]byte, 0)
 		currentHash := current.Hash
 		for currentParent != nil {
-			fmt.Println("currentParent", hex.EncodeToString(currentParent.Hash[:2]), currentParent.Parent == nil)
+			//fmt.Println("currentParent", hex.EncodeToString(currentParent.Hash[:2]), currentParent.Parent == nil)
 
 			if bytes.Equal(currentParent.Left.Hash, currentHash) {
-				merklePath = append(merklePath, currentParent.Right.Hash)
+				if currentParent.Right != nil {
+					merklePath = append(merklePath, currentParent.Right.Hash)
+				}
 			} else {
 				merklePath = append(merklePath, currentParent.Left.Hash)
 			}
