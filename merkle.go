@@ -8,7 +8,9 @@ package merkle
 
 import (
 	"bytes"
+	"encoding/hex"
 	"errors"
+	"fmt"
 	"hash"
 )
 
@@ -32,9 +34,10 @@ type TreeOptions struct {
 
 // Node in the merkle tree
 type Node struct {
-	Hash  []byte
-	Left  *Node
-	Right *Node
+	Hash   []byte
+	Left   *Node
+	Right  *Node
+	Parent *Node
 }
 
 // NewNode creates a node given a hash function and data to hash. If the hash function is nil, the data
@@ -187,7 +190,12 @@ func (tree *Tree) generateNodeLevel(below []Node, current []Node, h hash.Hash) (
 		node.Left = left
 		node.Right = right
 		current[i] = node
-
+		if left != nil {
+			left.Parent = &current[i]
+		}
+		if right != nil {
+			right.Parent = &current[i]
+		}
 	}
 	return uint64(end), nil
 }
@@ -214,33 +222,62 @@ func (tree *Tree) generateNode(left, right []byte, h hash.Hash) (Node, error) {
 	return NewNode(h, data)
 }
 
-func (tree *Tree) GetProof(leaf []byte) (ret [][]byte, err error) {
-	ret = make([][]byte, 0)
-
-	return tree.getProof(ret, tree.Root(), leaf)
-}
-
-func (tree *Tree) getProof(proof [][]byte, node *Node, leaf []byte) ([][]byte, error) {
-	if bytes.Equal(node.Hash, leaf) {
-		return proof, nil
-	}
-	if node.Right != nil {
-		if node.Left != nil {
-			p := copyProof(proof)
-			p = append(p, node.Left.Hash)
-			return tree.getProof(p, node.Right, leaf)
+func (m *Tree) GetProof(leaf []byte) ([][]byte, error) {
+	leafs := m.Leaves()
+	for _, current := range leafs {
+		if !bytes.Equal(current.Hash, leaf) {
+			continue
 		}
-	}
-	if node.Left != nil {
-		if node.Right != nil {
-			p := copyProof(proof)
-			p = append(p, node.Right.Hash)
-			return tree.getProof(p, node.Left, leaf)
-		}
-	}
 
+		currentParent := current.Parent
+		merklePath := make([][]byte, 0)
+		currentHash := current.Hash
+		for currentParent != nil {
+			fmt.Println("currentParent", hex.EncodeToString(currentParent.Hash[:2]), currentParent.Parent == nil)
+
+			if bytes.Equal(currentParent.Left.Hash, currentHash) {
+				merklePath = append(merklePath, currentParent.Right.Hash)
+			} else {
+				merklePath = append(merklePath, currentParent.Left.Hash)
+			}
+			currentHash = currentParent.Hash
+			currentParent = currentParent.Parent
+		}
+		return merklePath, nil
+
+	}
 	return nil, nil
 }
+
+//func (tree *Tree) GetProof(leaf []byte) (ret [][]byte, err error) {
+//	ret = make([][]byte, 0)
+//
+//	return tree.getProof(ret, tree.Root(), leaf)
+//}
+
+//func (tree *Tree) getProof(proof [][]byte, node *Node, leaf []byte) ([][]byte, error) {
+//	if bytes.Equal(node.Hash, leaf) {
+//		return proof, nil
+//	}
+//
+//	if node.Left != nil {
+//		if node.Right != nil {
+//			p := copyProof(proof)
+//			p = append(p, node.Right.Hash)
+//			return tree.getProof(p, node.Left, leaf)
+//		}
+//	}
+//
+//	if node.Right != nil {
+//		if node.Left != nil {
+//			p := copyProof(proof)
+//			p = append(p, node.Left.Hash)
+//			return tree.getProof(p, node.Right, leaf)
+//		}
+//	}
+//
+//	return nil, nil
+//}
 
 func copyProof(proof [][]byte) (ret [][]byte) {
 	ret = make([][]byte, 0)

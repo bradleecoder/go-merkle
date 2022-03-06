@@ -71,7 +71,7 @@ func TestSortedMakeMerkle(t *testing.T) {
 	fmt.Printf("Height: %d\n", tree.Height())
 	fmt.Printf("Root: %v\n", hex.EncodeToString(tree.Root().Hash))
 	fmt.Printf("N Leaves: %v\n", len(tree.Leaves()))
-	addr := common.HexToAddress("0xd30eD9C457C7D32F3F7B949964191e4084c53f66")
+	addr := common.HexToAddress("0x9f9A0Aa0507fe79cA1fF8f26a8D84bD8bb0Ec9dF")
 	h := crypto.Keccak256(addr.Bytes())
 	fmt.Println("leaf hash", hex.EncodeToString(h))
 	ret, err := tree.GetProof(h)
@@ -82,34 +82,31 @@ func TestSortedMakeMerkle(t *testing.T) {
 	for _, r := range ret {
 		fmt.Println("GetProof", hex.EncodeToString(r))
 	}
+	for i := uint64(2); i < 5; i++ {
+		fmt.Println("")
+		ret := tree.GetNodesAtHeight(i)
+		for _, r := range ret {
+			fmt.Println("GetNodesAtHeight ", i, hex.EncodeToString(r.Hash[:2]), hex.EncodeToString(r.Parent.Hash[:2]))
+		}
+	}
+	//for i := 0; i < len(tree.Nodes)-1; i++ {
+	//	fmt.Println("tree.Nodes", i, hex.EncodeToString(tree.Nodes[i].Hash[:2]), hex.EncodeToString(tree.Nodes[i].Parent.Hash[:2]))
+	//}
+	//leafs := tree.Leaves()
+	//for i, _ := range leafs {
+	//	fmt.Println("///////////////////")
+	//	if leafs[i].Left != nil {
+	//		fmt.Println("Left", hex.EncodeToString(leafs[i].Left.Hash))
+	//	}
+	//	if leafs[i].Right != nil {
+	//		fmt.Println("Right", hex.EncodeToString(leafs[i].Right.Hash))
+	//	}
+	//	if leafs[i].Parent != nil && leafs[i].Parent.Parent != nil {
+	//		fmt.Println("Parent", hex.EncodeToString(leafs[i].Parent.Parent.Hash))
+	//	}
+	//	fmt.Println("current", hex.EncodeToString(leafs[i].Hash))
+	//}
 
-	{
-		ret := tree.GetNodesAtHeight(1)
-		for _, r := range ret {
-			fmt.Println("GetNodesAtHeight 1", hex.EncodeToString(r.Hash))
-		}
-	}
-	fmt.Println("")
-	{
-		ret := tree.GetNodesAtHeight(2)
-		for _, r := range ret {
-			fmt.Println("GetNodesAtHeight 2", hex.EncodeToString(r.Hash))
-		}
-	}
-	fmt.Println("")
-	{
-		ret := tree.GetNodesAtHeight(3)
-		for _, r := range ret {
-			fmt.Println("GetNodesAtHeight 3", hex.EncodeToString(r.Hash))
-		}
-	}
-	fmt.Println("")
-	{
-		ret := tree.GetNodesAtHeight(4)
-		for _, r := range ret {
-			fmt.Println("GetNodesAtHeight 4", hex.EncodeToString(r.Hash))
-		}
-	}
 }
 
 var simpleHashData []byte
